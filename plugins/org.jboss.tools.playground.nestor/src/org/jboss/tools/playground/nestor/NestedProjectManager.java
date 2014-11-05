@@ -22,6 +22,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IWorkspace;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.ui.IWorkingSet;
 import org.jboss.tools.playground.nestor.internal.WorkingSets;
 
@@ -75,11 +76,57 @@ public class NestedProjectManager {
 	}
 
 	public static boolean isShownAsProject(IFolder folder) {
-		return shownAsProject != null && shownAsProject.containsKey(folder);
+		return isOpenProject(folder);
+		//return shownAsProject != null && shownAsProject.containsKey(folder);
 	}
 
 	public static boolean isShownAsNested(IProject project) {
-		return shownAsProject != null && shownAsProject.containsValue(project);
+		return hasOpenParentProject(project);
+		//return shownAsProject != null && shownAsProject.containsValue(project);
+	}
+
+	/**
+	 * Returns {@code true} if and only if there is an open project in the
+	 * current workspace having the same location as the given {@code folder}.
+	 * <p>
+	 * Note that this method loops over all projects in the workspace and
+	 * therfore, it is not very performant.
+	 *
+	 * @param folder
+	 *            the folder to decide about
+	 * @return {@code true} if the given {@code folder} is an open project
+	 */
+	private static boolean isOpenProject(IFolder folder) {
+		for (IProject project : folder.getWorkspace().getRoot().getProjects()) {
+			if (project.getLocation().equals(folder.getLocation()) && project.isOpen()) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Returns {@code true} if and only if there is an open project in the
+	 * current workspace at the parent location of the given {@code project}.
+	 *
+	 * @param project
+	 *            the project to decide about
+	 * @return {@code true} if and only if there is an open project in the
+	 *         current workspace at the parent location of the given
+	 *         {@code project}
+	 */
+	private static boolean hasOpenParentProject(IProject project) {
+		IPath location = project.getLocation();
+		if (location.segmentCount() > 1) {
+			IPath parentPath = location.removeLastSegments(1);
+			IContainer parent = project.getWorkspace().getRoot().getContainerForLocation(parentPath);
+			if (parent instanceof IFolder) {
+				return isOpenProject((IFolder) parent);
+			} else if (parent instanceof IProject) {
+				return ((IProject) parent).isOpen();
+			}
+		}
+		return false;
 	}
 
 }
