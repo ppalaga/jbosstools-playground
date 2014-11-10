@@ -22,7 +22,7 @@ public class HideFolderWhenProjectIsShownAsNested extends ViewerFilter {
 	@Override
 	public boolean select(Viewer viewer, Object parentElement, Object element) {
 		if (element instanceof IFolder) {
-			if (NestedProjectManager.isShownAsProject((IFolder)element)) {
+			if (NestedProjectManager.getDefault().isShownAsProject((IFolder)element)) {
 				return false;
 			}
 		}
