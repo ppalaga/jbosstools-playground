@@ -11,8 +11,10 @@
  ******************************************************************************/
 package org.jboss.tools.playground.nestor;
 
+import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IPath;
 import org.jboss.tools.playground.nestor.internal.ProjectPresentationHandler;
@@ -71,23 +73,6 @@ public class NestedProjectManager {
 			}
 		}
 		return false;
-	}
-	
-	public static IFolder getMostDirectOpenContainer(IProject project) {
-		IProject mostDirectParentProject = null;
-		for (IProject other : ResourcesPlugin.getWorkspace().getRoot().getProjects()) {
-			if (!project.equals(other) && other.isOpen()) {
-				IPath otherLocation = other.getLocation();
-				if ((mostDirectParentProject == null || otherLocation.segmentCount() > mostDirectParentProject.getLocation().segmentCount())
-					&& other.getLocation().isPrefixOf(project.getLocation())) {
-					mostDirectParentProject = other;
-				}
-			}
-		}
-		if (mostDirectParentProject != null) {
-			return mostDirectParentProject.getFolder(project.getLocation().removeLastSegments(1).removeFirstSegments(mostDirectParentProject.getLocation().segmentCount()));
-		}
-		return null;
 	}
 
 }

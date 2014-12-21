@@ -18,7 +18,9 @@ import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
 
@@ -62,10 +64,15 @@ public class NestedProjectsContentProvider implements ITreeContentProvider {
 
 	@Override
 	public Object getParent(Object element) {
-		if (element instanceof IProject) {
-			IProject project = (IProject)element;
-			if (NestedProjectManager.isShownAsNested(project)) {
-				return NestedProjectManager.getMostDirectOpenContainer(project);
+		if (element instanceof IResource) {
+			IResource resource = (IResource)element;
+			IPath parentPath = resource.getLocation().removeLastSegments(1);
+			IWorkspaceRoot root = resource.getWorkspace().getRoot();
+			IContainer result = root.getContainerForLocation(parentPath);
+			if (result != null) {
+				return result;
+			} else if (element instanceof IProject) {
+				return root;
 			}
 		}
 		return null;
